@@ -127,7 +127,7 @@ st.caption(
 
 # --- TODO: muestren la tabla de políticas (valor por cliente y total) para el % elegido ---
 
-t.subheader("2. Comparación de políticas de contacto")
+st.subheader("2. Comparación de políticas de contacto")
 
 resultados = []
 
