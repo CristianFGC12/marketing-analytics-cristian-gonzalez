@@ -36,8 +36,10 @@ def entrenar_t_learner(df: pd.DataFrame, test_size: float, seed: int):
     # TODO: entrenen el T-learner (dos modelos, igual que en el notebook)
     train_t = train[train["treatment_group"] == "treatment"]
     train_c = train[train["treatment_group"] == "control"]
-    modelo_tratado = ...   # <-- reemplacen esto
-    modelo_control = ...   # <-- reemplacen esto
+    modelo_tratado = LogisticRegression(max_iter=1000)
+    modelo_tratado.fit(train_t[FEATURES],train_t["responded_60d"])   # <-- reemplacen esto
+    modelo_control = LogisticRegression(max_iter=1000)
+    modelo_control.fit(train_c[FEATURES],train_c["responded_60d"])   # <-- reemplacen esto
 
     test = test.copy()
     X_test = test[FEATURES]
@@ -53,6 +55,26 @@ def valor_de_la_politica(test_df, seleccionados):
     valor_control = sel.loc[sel["treatment_group"] == "control", "margin_60d"].mean()
     return valor_tratado - valor_control, len(sel)
 
+def curva_qini(test_df, score_col, steps=40):
+    orden = test_df.sort_values(score_col,ascending=False).reset_index(drop=True)
+    es_tratado = (orden["treatment_group"] == "treatment").values
+    respondio = orden["responded_60d"].values
+    acumulado_tratados = np.cumsum(np.where(es_tratado, respondio, 0))
+    acumulado_control = np.cumsum(np.where(~es_tratado, respondio, 0))
+    n_tratados_acum = np.cumsum(es_tratado)
+    n_control_acum = np.cumsum(~es_tratado)
+    n = len(orden)
+    xs, ys = [0.0], [0.0]
+    for i in np.linspace(1, n, steps).astype(int):
+        nt = n_tratados_acum[i - 1]
+        nc = n_control_acum[i - 1]
+
+        tasa_t = acumulado_tratados[i - 1] / nt if nt > 0 else 0
+        tasa_c = acumulado_control[i - 1] / nc if nc > 0 else 0
+
+        xs.append(i / n)
+        ys.append((tasa_t - tasa_c) * n)
+    return np.array(xs), np.array(ys)
 
 # --- Título y carga de datos ---
 st.title("Laboratorio Final — Starbucks Rewards")
@@ -63,14 +85,72 @@ df = load_data()
 # TODO: agreguen un slider en la barra lateral para el % de la base a contactar
 with st.sidebar:
     st.header("Parámetros")
-    pct_contactar = ...   # <-- reemplacen esto: st.slider(...)
+    pct_contactar = st.slider("Porcentaje de clientes a contactar",min_value=10,max_value=100,value=30,step=10)   # <-- reemplacen esto: st.slider(...)
 
 train, test = entrenar_t_learner(df, test_size=0.30, seed=42)
 
 # --- TODO: calculen y grafiquen la curva Qini de su T-learner ---
+xs_uplift, ys_uplift = curva_qini(test,"uplift_estimado")
 
+fig, ax = plt.subplots(figsize=(9, 5))
+
+ax.plot(xs_uplift * 100,ys_uplift,color=GREEN,linewidth=2.5,label="T-learner (Regresión Logística)")
+
+# Referencia aleatoria
+ax.plot(xs_uplift * 100,np.linspace(0, ys_uplift[-1], len(xs_uplift)),color=GRAY,linestyle="--",label="Selección aleatoria")
+
+ax.axhline(0, color=GRAY, linewidth=0.8)
+ax.set_title("Curva Qini — T-learner")
+ax.set_xlabel("Porcentaje de clientes priorizados (%)")
+ax.set_ylabel("Ganancia incremental acumulada")
+ax.legend()
+ax.grid(alpha=0.2)
+
+st.subheader("1. Curva Qini")
+st.pyplot(fig)
+plt.close(fig)
+
+st.caption(
+    "La curva ayuda a evaluar si ordenar a los clientes por uplift "
+    "estimado permite identificar grupos con mayor respuesta incremental."
+)
 
 # --- TODO: muestren la tabla de políticas (valor por cliente y total) para el % elegido ---
 
+t.subheader("2. Comparación de políticas de contacto")
+
+resultados = []
+
+for pct in range(10, 101, 10):
+    n_contactar = max(1, int(len(test) * pct / 100))
+    seleccionados = (test.sort_values("uplift_estimado",ascending=False).head(n_contactar).index)
+    valor_cliente, n = valor_de_la_politica(test,seleccionados)
+    resultados.append({"Porcentaje contactado": pct,"Valor por cliente ($)": round(valor_cliente, 2),"Clientes seleccionados": n,"Valor total ($)": round(valor_cliente * n, 2)})
+
+tabla_politicas = pd.DataFrame(resultados)
+
+st.dataframe(tabla_politicas,use_container_width=True,hide_index=True)
+
+# --- Política elegida con el slider ---
+st.subheader(f"3. Resultado para contactar al {pct_contactar}%")
+
+n_contactar = max(1,int(len(test) * pct_contactar / 100))
+
+seleccionados = (test.sort_values("uplift_estimado",ascending=False).head(n_contactar).index)
+
+valor_cliente, n = valor_de_la_politica(test,seleccionados)
+
+col1, col2, col3 = st.columns(3)
+
+col1.metric("Clientes seleccionados",f"{n:,}")
+col2.metric("Valor por cliente ($)",f"${valor_cliente:,.2f}")
+
+col3.metric("Valor total estimado ($)",f"${valor_cliente * n:,.2f}")
+
+st.info(
+    "El porcentaje seleccionado prioriza a los clientes con mayor "
+    "uplift estimado. Compara el valor por cliente y el valor total "
+    "antes de recomendar una política."
+)
 
 st.info("Reemplacen cada TODO con su propio código. Revisen el notebook del laboratorio para la lógica exacta de cada pieza.")
