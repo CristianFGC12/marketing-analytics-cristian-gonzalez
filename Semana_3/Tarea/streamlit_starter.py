@@ -127,22 +127,7 @@ st.caption(
 
 # --- TODO: muestren la tabla de políticas (valor por cliente y total) para el % elegido ---
 
-st.subheader("2. Comparación de políticas de contacto")
-
-resultados = []
-
-for pct in range(10, 101, 10):
-    n_contactar = max(1, int(len(test) * pct / 100))
-    seleccionados = (test.sort_values("uplift_estimado",ascending=False).head(n_contactar).index)
-    valor_cliente, n = valor_de_la_politica(test,seleccionados)
-    resultados.append({"Porcentaje contactado": pct,"Valor por cliente ($)": round(valor_cliente, 2),"Clientes seleccionados": n,"Valor total ($)": round(valor_cliente * n, 2)})
-
-tabla_politicas = pd.DataFrame(resultados)
-
-st.dataframe(tabla_politicas,use_container_width=True,hide_index=True)
-
-# --- Política elegida con el slider ---
-st.subheader(f"3. Resultado para contactar al {pct_contactar}%")
+st.subheader(f"2. Resultado para contactar al {pct_contactar}%")
 
 n_contactar = max(1,int(len(test) * pct_contactar / 100))
 
