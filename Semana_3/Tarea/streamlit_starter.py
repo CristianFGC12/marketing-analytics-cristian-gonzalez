@@ -88,7 +88,7 @@ def curva_qini(test_df, score_col, steps=40):
 
 # --- Título y carga de datos ---
 st.title("Laboratorio Final — Starbucks Rewards")
-st.caption("TODO: escriban aquí una frase sobre qué decisión de negocio ayuda a tomar esta app.")
+st.caption("Herramienta para determinar el porcentaje de contacto de clientes para la campaña Strabucks Reward")
 
 df = load_data()
 
