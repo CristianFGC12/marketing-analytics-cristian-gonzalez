@@ -43,7 +43,7 @@ productos, ids, X, NUEVO, es_control = cargar()
 COL_AGUA = productos.index("Agua")
 popularidad = X.sum(axis=0)
 
-# TODO 1: la tabla de similitudes producto × producto (con la diagonal en 0), calculada UNA vez
+# la tabla de similitudes producto × producto (con la diagonal en 0), calculada UNA vez
 S_it = cosine_similarity(X.T)
 np.fill_diagonal(S_it, 0)   
 
@@ -52,11 +52,11 @@ def puntajes(metodo, x_vec, K):
     if metodo == "Popularidad":
         return popularidad.astype(float)
     if metodo == "Filtrado por ítem":
-        # TODO 2: suma de las similitudes de cada producto con lo que el cliente ya compró
+        # suma de las similitudes de cada producto con lo que el cliente ya compró
         if x_vec.sum() == 0:
             return popularidad.astype(float)  # Cold start fallback
-        return x_vec @ S_it   # <-- reemplacen esto
-    # TODO 3: filtrado por cliente: similitud del cliente con TODOS los demás, sus K vecinos más parecidos
+        return x_vec @ S_it   
+    #filtrado por cliente: similitud del cliente con TODOS los demás, sus K vecinos más parecidos
     #         y la suma de sus compras ponderada por esa similitud
     if x_vec.sum() == 0:
         return popularidad.astype(float)
@@ -64,7 +64,7 @@ def puntajes(metodo, x_vec, K):
     if fila_idx is not None:
         sims[fila_idx] = 0.0
     vecinos = np.argsort(-sims)[:K]
-    return sims[vecinos] @ X[vecinos]       # <-- reemplacen esto
+    return sims[vecinos] @ X[vecinos]       
 
 
 def top3(scores, x_vec):
@@ -77,7 +77,7 @@ def top3(scores, x_vec):
 st.title("☕ Recomendador de productos")
 st.caption("TODO: escriban aquí una frase sobre qué decisión de negocio ayuda a tomar esta app.")
 
-# TODO 4: barra lateral con los controles interactivos (mínimo UNO): un selector del método
+# barra lateral con los controles interactivos (mínimo UNO): un selector del método
 #         (st.selectbox) y un slider con el número de vecinos K (st.slider)
 with st.sidebar:
     st.header("⚙️ Parámetros del Modelo")
@@ -111,7 +111,7 @@ with tab1:
         else:
             st.warning("Cliente sin historial previo (Cold Start / 0 compras registradas).")
 
-    # TODO 5: Recomendaciones con explicabilidad de negocio
+    # Recomendaciones con explicabilidad de negocio
     scores = puntajes(metodo, x_vec, K, fila_idx=fila)
     recs = top3(scores, x_vec)
 
