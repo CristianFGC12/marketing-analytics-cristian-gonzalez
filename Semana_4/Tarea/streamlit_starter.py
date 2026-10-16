@@ -25,11 +25,11 @@ GRIS = "#9A988E"
 def cargar():
     BASE_DIR = Path(__file__).resolve().parent
     DATA_DIR = BASE_DIR / "data"
-    catalogo = pd.read_csv(BASE_DIR / "catalogo.csv")
-    hist = pd.read_csv(BASE_DIR / "ordenes_historial.csv")
-    hold = pd.read_csv(BASE_DIR / "ordenes_holdout.csv")
-    exp = pd.read_csv(BASE_DIR / "experimento.csv")
-    clientes = pd.read_csv(BASE_DIR / "clientes.csv")
+    catalogo = pd.read_csv(DATA_DIR / "catalogo.csv")
+    hist = pd.read_csv(DATA_DIR / "ordenes_historial.csv")
+    hold = pd.read_csv(DATA_DIR / "ordenes_holdout.csv")
+    exp = pd.read_csv(DATA_DIR / "experimento.csv")
+    clientes = pd.read_csv(DATA_DIR / "clientes.csv")
     productos = list(catalogo["item"])
     M = (pd.crosstab(hist["customer_id"], hist["item"]) > 0).astype(int).reindex(
         index=clientes["customer_id"], columns=productos, fill_value=0)
