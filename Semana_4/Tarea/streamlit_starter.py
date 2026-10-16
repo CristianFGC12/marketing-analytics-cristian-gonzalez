@@ -50,7 +50,7 @@ popularidad = X.sum(axis=0)
 S_it = cosine_similarity(X.T)
 np.fill_diagonal(S_it, 0)   
 
-def puntajes(metodo, x_vec, K):
+def puntajes(metodo, x_vec, K, fila_idx=None):
     """Puntajes de los 29 productos para UN cliente (x_vec = su vector de 0/1)."""
     if metodo == "Popularidad":
         return popularidad.astype(float)
