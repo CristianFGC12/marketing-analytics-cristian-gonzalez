@@ -255,7 +255,7 @@ def proponer_precio(precio_actual: float, costo: float, elasticidad: float, unid
         return {"error": "La elasticidad debe ser negativa (si sube el precio, se vende menos). Revisa el signo."}
     # Precio óptimo (solo existe si la demanda es elástica, ε < −1)
     if e < -1:
-        p_optimo = C * e / (1 + e)                          # pista: C × e ÷ (1 + e)
+        p_optimo = C * e / (1 + e)                         # pista: C × e ÷ (1 + e)
     else:
         p_optimo = None
     # Reglas de la empresa
@@ -401,7 +401,8 @@ INSTRUCCIONES = """Eres un tutor experto en Marketing Analytics para estudiantes
 4. Si no sabes qué segmento, producto o fuente de datos existe, usa listar_fuentes.
 5. Antes de explicar un concepto del curso, usa buscar_apunte y cita el archivo.
 6. Si una propuesta de precio dice requiere_aprobacion_humana, dilo claramente: una persona debe aprobarla.
-7. Explica en pasos cortos, muestra la fórmula y define cada sigla."""
+7. Explica en pasos cortos, muestra la fórmula y define cada sigla.
+8. Si un producto, segmento o fuente de datos esta mal escrito y no lo corrijas."""
 
 
 def llamar_gemini(contenido, config=None):
